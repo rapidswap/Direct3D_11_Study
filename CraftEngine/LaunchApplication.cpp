@@ -5,6 +5,26 @@
 LRESULT Win32MessageHandler(
 	HWND window, UINT message, WPARAM wparam, LPARAM lparam)
 {
+	// 메시지 처리.
+	switch (message)
+	{
+		// 창 닫기 메시지
+	case WM_CLOSE:
+	{
+		// 창 객체 삭제.
+		DestroyWindow(window);
+	}
+	return 0;
+
+	// 창 삭제 이벤트 처리.
+	case WM_DESTROY:
+	{
+		// 프로그램 종료 요청(종료 메시지 발행).
+		PostQuitMessage(0);
+	}
+	return 0;
+	}
+
 	return DefWindowProc(window, message, wparam, lparam);
 }
 
@@ -28,8 +48,7 @@ int LaunchApplication(HINSTANCE instance)
 	}
 
 	// Create the window.
-	HWND hwnd = CreateWindowEx(
-		0,                              // Optional window styles.
+	HWND hwnd = CreateWindow(
 		className,                     // Window class
 		L"Learn to Program Windows",    // Window text
 		WS_OVERLAPPEDWINDOW,            // Window style
@@ -37,17 +56,35 @@ int LaunchApplication(HINSTANCE instance)
 		// Size and position
 		CW_USEDEFAULT, CW_USEDEFAULT, CW_USEDEFAULT, CW_USEDEFAULT,
 
-		NULL,       // Parent window    
-		NULL,       // Menu
+		nullptr,       // Parent window    
+		nullptr,       // Menu
 		instance,  // Instance handle
-		NULL        // Additional application data
+		nullptr        // Additional application data
 	);
 
-	if (hwnd == NULL)
+	if (hwnd == nullptr)
 	{
 		return 0;
 	}
 
+	// 창 보이기 모드 설정.
 	ShowWindow(hwnd, SW_SHOW);
+
+	// 이벤트(메세지) 처리 루프.
+	MSG message = {};
+	while (message.message != WM_QUIT)
+	{
+		// 창에 메시지가 발생한 경우의 처리
+		if (PeekMessage(&message, nullptr, 0, 0, PM_REMOVE))
+		{
+			TranslateMessage(&message);
+			DispatchMessage(&message);
+		}
+		// 엔지 루프 처리 등...
+		else
+		{
+			
+		}
+	}
 	return 0;
 }

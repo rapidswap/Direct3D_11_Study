@@ -7,8 +7,8 @@
 
 int main()
 {
-    return LaunchApplication(GetModuleHandle(nullptr));
 
+    return LaunchApplication(GetModuleHandle(nullptr));
 }
 
 #else
