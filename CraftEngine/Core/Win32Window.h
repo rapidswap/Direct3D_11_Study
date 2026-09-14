@@ -1,0 +1,36 @@
+#pragma once
+
+#include <Windows.h>
+#include <string>
+#include <cstdint>
+
+namespace Craft
+{
+	class Win32Window
+	{
+	public:
+		Win32Window(uint32_t width = 1280, uint32_t height = 800, const std::wstring title = L"Craft_Render_Engine");
+		~Win32Window();
+
+	private:
+		// 창 메시지 처리 함수.
+		static LRESULT Win32MessageHandler(HWND window, UINT message, WPARAM wparam, LPARAM lparam);
+
+
+
+	private:
+		// 프로그램 인스턴스(포인터).
+		HINSTANCE instance = nullptr;
+
+		// 창 객체 핸들(포인터).
+		HWND handle = nullptr;
+
+		// 창 크기.
+		uint32_t width = 0;
+		uint32_t height = 0;
+
+		std::wstring className = L"Crefte_Render_Window_Class";
+		std::wstring title;
+	};
+}
+
