@@ -1,9 +1,10 @@
 #include "Win32Window.h"
+#include <Interface/IMessageHandler.h>
 
 namespace Craft
 {
-	Win32Window::Win32Window(uint32_t width, uint32_t height, const std::wstring title)
-		:width(width),height(height),title(title),
+	Win32Window::Win32Window(uint32_t width, uint32_t height, IMessageHandler* messageHandler, const std::wstring title)
+		:width(width),height(height),messageHandler(messageHandler),title(title),
 		instance(GetModuleHandle(nullptr))
 	{
 		// 창 만들기.
@@ -49,7 +50,7 @@ namespace Craft
 			nullptr,       // Parent window    
 			nullptr,       // Menu
 			instance,  // Instance handle
-			nullptr        // Additional application data
+			this        // Additional application data
 		);
 
 		if (!handle)
@@ -72,47 +73,40 @@ namespace Craft
 
 	LRESULT Win32Window::Win32MessageHandler(HWND window, UINT message, WPARAM wparam, LPARAM lparam)
 	{
-		// 메시지 처리.
-		switch (message)
+		// 생성 이벤트.
+		if (message == WM_CREATE)
 		{
-			// 창 닫기 메시지
-		case WM_CLOSE:
-		{
-			// 창 객체 삭제.
-			DestroyWindow(window);
-		}
-		return 0;
+			// 윈도우 파라미터 설정.
+			// 생성할 때 넘겨줬던 추가 파라미터 가져오기.
+			CREATESTRUCT* createStruct = reinterpret_cast<CREATESTRUCT*>(lparam);
 
-		// 창 삭제 이벤트 처리.
-		case WM_DESTROY:
-		{
-			// 프로그램 종료 요청(종료 메시지 발행).
-			PostQuitMessage(0);
-		}
-		// ESC키 입력 처리.
-		case WM_KEYDOWN:
-		{
-			if (wparam == VK_ESCAPE)
+			if (createStruct)
 			{
-				DestroyWindow(window);
+				// 임시저장.
+				Win32Window* win32Window = reinterpret_cast<Win32Window*>(createStruct->lpCreateParams);
+
+				if (win32Window && win32Window->messageHandler)
+				{
+					SetWindowLongPtr(window, GWLP_USERDATA, (LONG_PTR)win32Window);
+				}
 			}
+			return 0;
 		}
-		return 0;
 
-		case WM_PAINT:
+		// 생성 이후의 이벤트 처리
+		Win32Window* win32Window = reinterpret_cast<Win32Window*>(GetWindowLongPtr(window, GWLP_USERDATA));
+
+		if (win32Window && win32Window->messageHandler)
 		{
-			PAINTSTRUCT ps;
-			HDC hdc = BeginPaint(window, &ps);
+			// 이벤트를 인터페이스를 통해서 전달.
+			return win32Window->messageHandler->HandleMassege(window, message, wparam, lparam);
 
-			// All painting occurs here, between BeginPaint and EndPaint.
-
-			FillRect(hdc, &ps.rcPaint, (HBRUSH)(COLOR_WINDOW + 1));
-
-			EndPaint(window, &ps);
-		}
 		}
 
-
+		// 방어 코드.
 		return DefWindowProc(window, message, wparam, lparam);
+
+
+		
 	}
 }

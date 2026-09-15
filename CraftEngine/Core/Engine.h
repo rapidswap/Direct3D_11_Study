@@ -1,5 +1,8 @@
 #pragma once
 
+#include <Interface/IMessageHandler.h>
+
+#include <cstdint>
 #include <memory>
 #include <string>
 
@@ -8,7 +11,7 @@ namespace Craft
 	// 전방선언.
 	class Win32Window;
 
-	class Engine
+	class Engine : public IMessageHandler
 	{
 	public:
 		Engine(uint32_t width = 1280, uint32_t height = 800, const std::wstring title = L"Craft_Render_Engine");
@@ -20,9 +23,14 @@ namespace Craft
 		void Quit();
 
 	protected:
+		// IMessageHandler을(를) 통해 상속됨
+		virtual LRESULT HandleMassege(HWND window, UINT message, WPARAM wparam, LPARAM lparam) override;
+
+
+	protected:
 		// 창 객체.
 		std::unique_ptr<Win32Window>  window;
-		
+
 	};
 }
 

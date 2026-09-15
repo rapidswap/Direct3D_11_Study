@@ -6,17 +6,21 @@
 
 namespace Craft
 {
+	// 전방선언.
+	class IMessageHandler;
+
 	class Win32Window
 	{
 	public:
-		Win32Window(uint32_t width = 1280, uint32_t height = 800, const std::wstring title = L"Craft_Render_Engine");
+		Win32Window(uint32_t width = 1280,
+			uint32_t height = 800,
+			IMessageHandler* messageHandler = nullptr,
+			const std::wstring title = L"Craft_Render_Engine");
 		~Win32Window();
 
 	private:
 		// 창 메시지 처리 함수.
 		static LRESULT Win32MessageHandler(HWND window, UINT message, WPARAM wparam, LPARAM lparam);
-
-
 
 	private:
 		// 프로그램 인스턴스(포인터).
@@ -31,6 +35,10 @@ namespace Craft
 
 		std::wstring className = L"Crefte_Render_Window_Class";
 		std::wstring title;
+		
+		// 메시지 핸들러 객체.
+		IMessageHandler* messageHandler = nullptr;
+
 	};
 }
 
