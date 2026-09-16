@@ -1,11 +1,15 @@
 #include "Engine.h"
 #include <Core/Win32Window.h>
+#include <Graphics/Renderer.h>
 
 
 Craft::Engine::Engine(uint32_t width, uint32_t height, const std::wstring title)
 {
 	// 창 객체 생성.
 	window = std::make_unique<Win32Window>(width, height, this, title);
+
+	// 렌더러 객체 생성.
+	renderer = std::make_unique<Renderer>(*window);
 }
 
 Craft::Engine::~Engine()

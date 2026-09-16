@@ -19,6 +19,6 @@ int WinMain(
     _In_ int nShowCmd
 )
 {
-    return LaunchApplication(GetModuleHandle(nullptr));
+    return LaunchApplication();
 }
 #endif

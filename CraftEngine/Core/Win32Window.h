@@ -18,6 +18,11 @@ namespace Craft
 			const std::wstring title = L"Craft_Render_Engine");
 		~Win32Window();
 
+		// Getter.
+		inline uint32_t GetWidth() const { return width; }
+		inline uint32_t GetHeight() const { return height; }
+		inline HWND GetHandle() const { return handle; }
+
 	private:
 		// 창 메시지 처리 함수.
 		static LRESULT Win32MessageHandler(HWND window, UINT message, WPARAM wparam, LPARAM lparam);

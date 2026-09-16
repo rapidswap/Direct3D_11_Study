@@ -6,11 +6,14 @@
 
 namespace Craft
 {
+	// 전방선언.
+	class Win32Window;
+
 	// CPU에서 GPU로 명령을 전달.
 	class Renderer
 	{
 	public:
-		Renderer();
+		Renderer(const Win32Window& window);
 		~Renderer();
 
 	private:
@@ -18,6 +21,7 @@ namespace Craft
 		void CreateDevices();
 
 		// 스왑체인 생성.
+		void CreateSwapChain(const Win32Window& window);
 
 	private:
 		// 장치(그래픽카드).
