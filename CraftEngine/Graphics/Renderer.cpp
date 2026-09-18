@@ -11,24 +11,53 @@ namespace Craft
 
 		// 스왑체인 생성.
 		CreateSwapChain(window);
+
+		// 렌더 타겟 뷰 생성.
+		CreateRenderTargetView();
+
+		// 데모 버퍼 생성.
+		CreateDemoBuffers();
+
+		// 셰이더 생성.
+		CreateDefaultShaders();
 	}
 	Renderer::~Renderer()
 	{
-		if (device)
-		{
-			device->Release();
-			device = nullptr;
-		}
-		if (context)
-		{
-			context->Release();
-			context = nullptr;
-		}
-		if (swapChain)
-		{
-			swapChain->Release();
-			swapChain = nullptr;
-		}
+		SafeRelease(device);
+		SafeRelease(context);
+		SafeRelease(swapChain);
+		SafeRelease(renderTargetView);
+		SafeRelease(vertexBuffer);
+		SafeRelease(indexBuffer);
+		SafeRelease(vertexShader);
+		SafeRelease(pixelShader);
+	}
+
+	void Renderer::Draw(float red, float green, float blue, uint32_t vsync)
+	{
+		BeginScene(red, green, blue);
+		DrawScene();
+		EndScene(vsync);
+	}
+
+	void Renderer::BeginScene(float red, float green, float blue)
+	{
+		// 그리기 준비
+		// 배경 지우기 및 그리기 대상 결정.
+		context->OMSetRenderTargets(1, &renderTargetView, nullptr);
+
+		float backgroundColor[4] = { red,green,blue,1.0f };
+		context->ClearRenderTargetView(renderTargetView, backgroundColor);
+	}
+
+	void Renderer::DrawScene()
+	{
+	}
+
+	void Renderer::EndScene(uint32_t vsync)
+	{
+		// 프론트-백 버퍼 교환.
+		swapChain->Present(vsync, 0);
 	}
 
 	void Renderer::CreateDevices()
@@ -49,7 +78,7 @@ namespace Craft
 		D3D_FEATURE_LEVEL selectedFeatureLevel = {};
 
 		// 장치 생성 함수 호출.
-		auto result = D3D11CreateDevice(
+		ThrowIfFailed(D3D11CreateDevice(
 			nullptr,
 			D3D_DRIVER_TYPE_HARDWARE,
 			nullptr,
@@ -60,16 +89,10 @@ namespace Craft
 			&device,
 			nullptr, //&selectedFeatureLevel,
 			&context
-		);
-
-		// 실패 확인.
-		//if(SUCCEEDED(result))
-		if (FAILED(result))
-		{
-			__debugbreak();
-			MessageBoxA(nullptr, "Failed to create device", "D3D Error", MB_OK);
-		}
+		), L"Failed to create device");
 	}
+
+
 	void Renderer::CreateSwapChain(const Win32Window& window)
 	{
 		// 스왑체인 생성을 위한 객체 생성.
@@ -114,5 +137,76 @@ namespace Craft
 			factory->Release();
 			factory = nullptr;
 		}
+	}
+	void Renderer::CreateRenderTargetView()
+	{
+		// 백버퍼(2차원 배열-텍스처) 정보 가져오기.
+		ID3D11Texture2D* backBuffer = nullptr;
+		ThrowIfFailed(swapChain->GetBuffer(0, IID_PPV_ARGS(&backBuffer)),L"Failed to get back buffer swap chain");
+
+		// 렌더 타겟 뷰 생성.
+		ThrowIfFailed(device->CreateRenderTargetView(backBuffer, nullptr, &renderTargetView),L"Failed to create RTV");
+
+
+		// 사용한 후 해제.
+		SafeRelease(backBuffer);
+	}
+	void Renderer::CreateDemoBuffers()
+	{
+		// Temp: 구조체 선언.
+		struct Vector3
+		{
+			float x, y, z = 0.0f;
+		};
+		
+		// 삼각형을 이루는 정점 데이터(배열).
+		Vector3 vertices[] =
+		{
+			Vector3{0.0f,0.5f,0.5f},
+			Vector3{0.5f,-0.5f,0.5f},
+			Vector3{-0.5f,-0.5f,0.5f}
+		};
+
+		// 원시 데이터를 포장해서 그래픽카드에 전달해야됨.
+		// 전달 매개체가 버퍼.
+
+		// 버퍼 구성 정보.
+		D3D11_BUFFER_DESC vertexBufferDesc = {};
+		vertexBufferDesc.ByteWidth = sizeof(Vector3) * 3;
+		vertexBufferDesc.Usage = D3D11_USAGE_DEFAULT;
+		vertexBufferDesc.BindFlags = D3D11_BIND_VERTEX_BUFFER;
+
+		// 버퍼에 저장할 데이터.
+		D3D11_SUBRESOURCE_DATA vertexBufferData = {};
+		vertexBufferData.pSysMem = vertices;
+
+		ThrowIfFailed(device->CreateBuffer(&vertexBufferDesc, &vertexBufferData, &vertexBuffer),L"Failed to create vertex buffer.");
+
+
+		// 인덱스 원시 데이터 배열.
+		// 정점의 순서 - 삼각형을 구성할 인덱스 순서.
+		uint32_t indices[] =
+		{
+			0,
+			1,
+			2
+		};
+
+		// 버퍼 구성 정보.
+		D3D11_BUFFER_DESC indexBufferDesc = {};
+		indexBufferDesc.ByteWidth = sizeof(uint32_t) * 3;
+		indexBufferDesc.Usage = D3D11_USAGE_DEFAULT;
+		indexBufferDesc.BindFlags = D3D11_BIND_INDEX_BUFFER;
+
+		// 버퍼에 저장할 데이터.
+		D3D11_SUBRESOURCE_DATA indexBufferData = {};
+		indexBufferData.pSysMem = indices;
+
+		ThrowIfFailed(device->CreateBuffer(&indexBufferDesc, &indexBufferData, &indexBuffer), L"Failed to create index buffer.");
+		
+	}
+	void Renderer::CreateDefaultShaders()
+	{
+
 	}
 }

@@ -5,6 +5,7 @@
 #include <cstdint>
 #include <memory>
 #include <string>
+#include <Windows.h>
 
 namespace Craft
 {
@@ -22,6 +23,10 @@ namespace Craft
 
 		// 엔진 종료 함수.
 		void Quit();
+
+	protected:
+		// Draw함수.
+		void Draw();
 
 	protected:
 		// IMessageHandler을(를) 통해 상속됨
