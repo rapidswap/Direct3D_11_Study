@@ -68,6 +68,13 @@
     <Manifest>
       <EnableSegmentHeap>true</EnableSegmentHeap>
     </Manifest>
+    <CustomBuildStep>
+      <Command>
+      </Command>
+    </CustomBuildStep>
+    <PreBuildEvent>
+      <Command>xcopy HLSLShaders\*.hlsl $(OutDir)\HLSLShaders\ /e /y /i</Command>
+    </PreBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <ClCompile>
@@ -90,6 +97,13 @@
     <Manifest>
       <EnableSegmentHeap>true</EnableSegmentHeap>
     </Manifest>
+    <CustomBuildStep>
+      <Command>
+      </Command>
+    </CustomBuildStep>
+    <PreBuildEvent>
+      <Command>xcopy HLSLShaders\*.hlsl $(OutDir)\HLSLShaders\ /e /y /i</Command>
+    </PreBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="Core\Engine.cpp" />
@@ -105,6 +119,18 @@
     <ClInclude Include="Graphics\Renderer.h" />
     <ClInclude Include="Interface\IMessageHandler.h" />
     <ClInclude Include="LaunchApplication.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <FxCompile Include="HLSLShaders\DefaultPS.hlsl">
+      <ShaderType>Pixel</ShaderType>
+      <ShaderModel>5.0</ShaderModel>
+      <EntryPointName>main</EntryPointName>
+    </FxCompile>
+    <FxCompile Include="HLSLShaders\DefaultVS.hlsl">
+      <ShaderType>Vertex</ShaderType>
+      <ShaderModel>5.0</ShaderModel>
+      <EntryPointName>main</EntryPointName>
+    </FxCompile>
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
