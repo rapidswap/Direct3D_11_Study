@@ -21,7 +21,12 @@ namespace Craft
 
 		// 셰이더 생성.
 		CreateDefaultShaders();
+
+		// 뷰포트 생성 및 바인딩.
+		CreateViewport(window.GetWidth(), window.GetHeight());
 	}
+
+
 	Renderer::~Renderer()
 	{
 		// 리소스 해제.
@@ -70,14 +75,7 @@ namespace Craft
 		context->VSSetShader(vertexShader, nullptr, 0);
 		context->PSSetShader(pixelShader, nullptr, 0);
 
-		// 뷰포트 설정.
-		D3D11_VIEWPORT viewport = {};
-		viewport.TopLeftX = 0.0f;
-		viewport.TopLeftY = 0.0f;
-		viewport.Width = 1280.0f;
-		viewport.Height = 800.0f;
-		viewport.MinDepth = 0.0f;
-		viewport.MaxDepth = 1.0f;
+		
 
 		context->RSSetViewports(1, &viewport);
 
@@ -312,6 +310,20 @@ namespace Craft
 		// 사용한 리소스 해제.
 		SafeRelease(vertexShaderObject);
 		SafeRelease(pixelShaderObject);
+
+	}
+	void Renderer::CreateViewport(uint32_t width, uint32_t height)
+	{
+		// 뷰포트 설정.
+		viewport.TopLeftX = 0.0f;
+		viewport.TopLeftY = 0.0f;
+		viewport.Width = static_cast<float>(width);
+		viewport.Height = static_cast<float>(height);
+		viewport.MinDepth = 0.0f;
+		viewport.MaxDepth = 1.0f;
+
+		// 바인딩.
+		context->RSSetViewports(1, &viewport);
 
 	}
 }
