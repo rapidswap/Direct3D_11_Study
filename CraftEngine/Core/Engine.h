@@ -1,11 +1,9 @@
-#pragma once
+﻿#pragma once
 
 #include <Interface/IMessageHandler.h>
-
-#include <cstdint>
 #include <memory>
 #include <string>
-#include <Windows.h>
+#include <cstdint>
 
 namespace Craft
 {
@@ -16,30 +14,36 @@ namespace Craft
 	class Engine : public IMessageHandler
 	{
 	public:
-		Engine(uint32_t width = 1280, uint32_t height = 800, const std::wstring title = L"Craft_Render_Engine");
+		Engine(
+			uint32_t width = 1280,
+			uint32_t height = 800,
+			const std::wstring title = L"Craft Render Engine");
+
 		virtual ~Engine();
-		// 엔진루프 실행 함수.
+
+		// 엔진 루프 실행 함수.
 		void Run();
 
 		// 엔진 종료 함수.
 		void Quit();
 
 	protected:
-		// Draw함수.
+		// Draw 함수.
 		void Draw();
 
 	protected:
-		// IMessageHandler을(를) 통해 상속됨
-		virtual LRESULT HandleMassege(HWND window, UINT message, WPARAM wparam, LPARAM lparam) override;
-
+		// Inherited via IMessageHandler
+		virtual LRESULT HandleMessage(
+			HWND window, 
+			UINT message, 
+			WPARAM wparam, 
+			LPARAM lparam) override;
 
 	protected:
 		// 창 객체.
-		std::unique_ptr<Win32Window>  window;
+		std::unique_ptr<Win32Window> window;
 
 		// 렌더러 객체.
 		std::unique_ptr<Renderer> renderer;
-
 	};
 }
-

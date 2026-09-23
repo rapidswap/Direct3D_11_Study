@@ -1,4 +1,4 @@
-#pragma once
+﻿#pragma once
 
 #include <Windows.h>
 #include <string>
@@ -12,10 +12,11 @@ namespace Craft
 	class Win32Window
 	{
 	public:
-		Win32Window(uint32_t width = 1280,
+		Win32Window(
+			uint32_t width = 1280,
 			uint32_t height = 800,
 			IMessageHandler* messageHandler = nullptr,
-			const std::wstring title = L"Craft_Render_Engine");
+			const std::wstring title = L"Craft Render Engine");
 		~Win32Window();
 
 		// Getter.
@@ -25,7 +26,12 @@ namespace Craft
 
 	private:
 		// 창 메시지 처리 함수.
-		static LRESULT Win32MessageHandler(HWND window, UINT message, WPARAM wparam, LPARAM lparam);
+		static LRESULT Win32MessageHandler(
+			HWND window,
+			UINT message,
+			WPARAM wparam,
+			LPARAM lparam
+		);
 
 	private:
 		// 프로그램 인스턴스(포인터).
@@ -38,12 +44,11 @@ namespace Craft
 		uint32_t width = 0;
 		uint32_t height = 0;
 
-		std::wstring className = L"Crefte_Render_Window_Class";
+		// 클래스 이름/타이틀 이름.
+		std::wstring className = L"Craft_Render_Window_Class";
 		std::wstring title;
-		
+
 		// 메시지 핸들러 객체.
 		IMessageHandler* messageHandler = nullptr;
-
 	};
 }
-

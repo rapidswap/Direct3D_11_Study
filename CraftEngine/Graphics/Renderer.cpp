@@ -1,4 +1,4 @@
-#include "Renderer.h"
+﻿#include "Renderer.h"
 #include <Core/Win32Window.h>
 #include <cstdint>
 #include <d3dcompiler.h>
@@ -19,13 +19,12 @@ namespace Craft
 		// 데모 버퍼 생성.
 		CreateDemoBuffers();
 
-		// 셰이더 생성.
+		// 셰이더 컴파일 및 셰이더 객체 생성.
 		CreateDefaultShaders();
 
 		// 뷰포트 생성 및 바인딩.
 		CreateViewport(window.GetWidth(), window.GetHeight());
 	}
-
 
 	Renderer::~Renderer()
 	{
@@ -51,11 +50,11 @@ namespace Craft
 
 	void Renderer::BeginScene(float red, float green, float blue)
 	{
-		// 그리기 준비
-		// 배경 지우기 및 그리기 대상 결정.
+		// 그리기 준비.
+		// 배경 지우기 및 그리기 대상 설정.
 		context->OMSetRenderTargets(1, &renderTargetView, nullptr);
 
-		float backgroundColor[4] = { red,green,blue,1.0f };
+		const float backgroundColor[4] = { red, green, blue, 1.0f };
 		context->ClearRenderTargetView(renderTargetView, backgroundColor);
 	}
 
@@ -64,7 +63,6 @@ namespace Craft
 		// 입력 설정 - 리소스 바인딩.
 		uint32_t stride = sizeof(float) * 3;
 		uint32_t offset = 0;
-		
 		context->IASetVertexBuffers(0, 1, &vertexBuffer, &stride, &offset);
 		context->IASetIndexBuffer(indexBuffer, DXGI_FORMAT_R32_UINT, 0);
 		context->IASetInputLayout(inputLayout);
@@ -74,11 +72,6 @@ namespace Craft
 		// 셰이더 설정.
 		context->VSSetShader(vertexShader, nullptr, 0);
 		context->PSSetShader(pixelShader, nullptr, 0);
-
-		
-
-		context->RSSetViewports(1, &viewport);
-
 
 		// 드로우 콜.
 		context->DrawIndexed(3, 0, 0);
@@ -95,19 +88,33 @@ namespace Craft
 		uint32_t flag = 0;
 
 #if _DEBUG
-		flag = D3D11_CREATE_DEVICE_DEBUG;
+		flag |= D3D11_CREATE_DEVICE_DEBUG;
 #endif
+
+		// 장치 생성 함수 호출.
+		/*
+		* _In_opt_ IDXGIAdapter* pAdapter,
+		  D3D_DRIVER_TYPE DriverType,
+		  HMODULE Software,
+		  UINT Flags,
+		  _In_reads_opt_( FeatureLevels ) CONST D3D_FEATURE_LEVEL*   pFeatureLevels,
+		  UINT FeatureLevels,
+		  UINT SDKVersion,
+		  _COM_Outptr_opt_ ID3D11Device** ppDevice,
+		  _Out_opt_ D3D_FEATURE_LEVEL* pFeatureLevel,
+		  _COM_Outptr_opt_ ID3D11DeviceContext** ppImmediateContext
+		*
+		*/
 
 		// 그래픽스 api 버전.
 		D3D_FEATURE_LEVEL featureLevels[] =
 		{
 			D3D_FEATURE_LEVEL_11_1,
-			D3D_FEATURE_LEVEL_11_0
+			D3D_FEATURE_LEVEL_11_0,
 		};
 
 		D3D_FEATURE_LEVEL selectedFeatureLevel = {};
 
-		// 장치 생성 함수 호출.
 		ThrowIfFailed(D3D11CreateDevice(
 			nullptr,
 			D3D_DRIVER_TYPE_HARDWARE,
@@ -122,15 +129,17 @@ namespace Craft
 		), L"Failed to create device");
 	}
 
-
 	void Renderer::CreateSwapChain(const Win32Window& window)
 	{
 		// 스왑체인 생성을 위한 객체 생성.
 		IDXGIFactory* factory = nullptr;
-		
-		// auto result = CreateDXGIFactory(__uuidof(IDXGIFactory), reinterpret_cast<void**>(&factory));
-		auto result = CreateDXGIFactory(IID_PPV_ARGS(&factory));
 
+		//auto result = CreateDXGIFactory(
+		//	__uuidof(IDXGIFactory),
+		//	reinterpret_cast<void**>(&factory)
+		//);
+
+		auto result = CreateDXGIFactory(IID_PPV_ARGS(&factory));
 
 		if (FAILED(result))
 		{
@@ -139,6 +148,16 @@ namespace Craft
 			return;
 		}
 
+		/*
+		* DXGI_MODE_DESC BufferDesc;
+		  DXGI_SAMPLE_DESC SampleDesc;
+		  DXGI_USAGE BufferUsage;
+		  UINT BufferCount;
+		  HWND OutputWindow;
+		  BOOL Windowed;
+		  DXGI_SWAP_EFFECT SwapEffect;
+		  UINT Flags;
+		*/
 
 		DXGI_SWAP_CHAIN_DESC swapChainDesc = {};
 		swapChainDesc.BufferDesc.Width = window.GetWidth();
@@ -149,11 +168,15 @@ namespace Craft
 		swapChainDesc.BufferUsage = DXGI_USAGE_RENDER_TARGET_OUTPUT;
 		swapChainDesc.BufferCount = 2;
 		swapChainDesc.OutputWindow = window.GetHandle();
-		swapChainDesc.Windowed = true;
+		swapChainDesc.Windowed = true;		// 창모드 실행 여부.
 		swapChainDesc.SwapEffect = DXGI_SWAP_EFFECT_FLIP_DISCARD;
 
 		// 스왑체인 생성.
-		result = factory->CreateSwapChain(device, &swapChainDesc, &swapChain);
+		result = factory->CreateSwapChain(
+			device,
+			&swapChainDesc,
+			&swapChain
+		);
 
 		if (FAILED(result))
 		{
@@ -168,19 +191,24 @@ namespace Craft
 			factory = nullptr;
 		}
 	}
+
 	void Renderer::CreateRenderTargetView()
 	{
 		// 백버퍼(2차원 배열-텍스처) 정보 가져오기.
-		ID3D11Texture2D* backBuffer = nullptr;
-		ThrowIfFailed(swapChain->GetBuffer(0, IID_PPV_ARGS(&backBuffer)),L"Failed to get back buffer swap chain");
+		ID3D11Texture2D* backbuffer = nullptr;
+		ThrowIfFailed(
+			swapChain->GetBuffer(0, IID_PPV_ARGS(&backbuffer)),
+			L"Failed to get back buffer from swap chain");
 
 		// 렌더 타겟 뷰 생성.
-		ThrowIfFailed(device->CreateRenderTargetView(backBuffer, nullptr, &renderTargetView),L"Failed to create RTV");
-
+		ThrowIfFailed(device->CreateRenderTargetView(
+			backbuffer, nullptr, &renderTargetView
+		), L"Failed to create RTV");
 
 		// 사용한 후 해제.
-		SafeRelease(backBuffer);
+		SafeRelease(backbuffer);
 	}
+
 	void Renderer::CreateDemoBuffers()
 	{
 		// Temp: 구조체 선언.
@@ -188,16 +216,16 @@ namespace Craft
 		{
 			float x, y, z = 0.0f;
 		};
-		
+
 		// 삼각형을 이루는 정점 데이터(배열).
 		Vector3 vertices[] =
 		{
-			Vector3{0.0f,0.5f,0.5f},
-			Vector3{0.5f,-0.5f,0.5f},
-			Vector3{-0.5f,-0.5f,0.5f}
+			Vector3 { 0.0f, 0.5f, 0.5f },
+			Vector3 { 0.5f, -0.5f, 0.5f },
+			Vector3 { -0.5f, -0.5f, 0.5f },
 		};
 
-		// 원시 데이터를 포장해서 그래픽카드에 전달해야됨.
+		// 원시 데이터를 포장해서 그래픽카드에 전달해야함.
 		// 전달 매개체가 버퍼.
 
 		// 버퍼 구성 정보.
@@ -210,17 +238,15 @@ namespace Craft
 		D3D11_SUBRESOURCE_DATA vertexBufferData = {};
 		vertexBufferData.pSysMem = vertices;
 
-		ThrowIfFailed(device->CreateBuffer(&vertexBufferDesc, &vertexBufferData, &vertexBuffer),L"Failed to create vertex buffer.");
-
+		ThrowIfFailed(device->CreateBuffer(
+			&vertexBufferDesc,
+			&vertexBufferData,
+			&vertexBuffer
+		), L"Failed to create vertex buffer");
 
 		// 인덱스 원시 데이터 배열.
 		// 정점의 순서 - 삼각형을 구성할 인덱스 순서.
-		uint32_t indices[] =
-		{
-			0,
-			1,
-			2
-		};
+		uint32_t indices[] = { 0, 1, 2 };
 
 		// 버퍼 구성 정보.
 		D3D11_BUFFER_DESC indexBufferDesc = {};
@@ -232,19 +258,20 @@ namespace Craft
 		D3D11_SUBRESOURCE_DATA indexBufferData = {};
 		indexBufferData.pSysMem = indices;
 
-		ThrowIfFailed(device->CreateBuffer(&indexBufferDesc, &indexBufferData, &indexBuffer), L"Failed to create index buffer.");
-		
+		ThrowIfFailed(device->CreateBuffer(
+			&indexBufferDesc,
+			&indexBufferData,
+			&indexBuffer
+		), L"Failed to create index buffer");
 	}
+
 	void Renderer::CreateDefaultShaders()
 	{
 		// 셰이더 컴파일 결과 저장용 객체.
 		ID3DBlob* vertexShaderObject = nullptr;
 
-
-
-		// 세이더 컴파일.
-		ThrowIfFailed(D3DCompileFromFile
-		(
+		// 셰이더(Shader) 컴파일.
+		ThrowIfFailed(D3DCompileFromFile(
 			L"HLSLShaders/DefaultVS.hlsl",
 			nullptr,
 			nullptr,
@@ -265,11 +292,19 @@ namespace Craft
 				&vertexShader
 			), L"Failed to create vertex shader");
 
-
 		// 정점 셰이더 입력 관련 정보 객체 생성.
+		/*
+		* LPCSTR SemanticName;
+		  UINT SemanticIndex;
+		  DXGI_FORMAT Format;
+		  UINT InputSlot;
+		  UINT AlignedByteOffset;
+		  D3D11_INPUT_CLASSIFICATION InputSlotClass;
+		  UINT InstanceDataStepRate;
+		*/
 		D3D11_INPUT_ELEMENT_DESC inputLayoutDesc[] =
 		{
-			{"POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 0, D3D11_INPUT_PER_VERTEX_DATA, 0}
+			{ "POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 0, D3D11_INPUT_PER_VERTEX_DATA, 0 }
 		};
 
 		ThrowIfFailed(device->CreateInputLayout(
@@ -280,13 +315,11 @@ namespace Craft
 			&inputLayout), L"failed to create input layout");
 
 
-		// 픽셀 셰이더 컴파일 결과 저장 객체.
+		// 픽셀 셰이더 컴파일 결과 저장용 객체.
 		ID3DBlob* pixelShaderObject = nullptr;
-		
+
 		// 픽셀 셰이더.
-		// 세이더 컴파일.
-		ThrowIfFailed(D3DCompileFromFile
-		(
+		ThrowIfFailed(D3DCompileFromFile(
 			L"HLSLShaders/DefaultPS.hlsl",
 			nullptr,
 			nullptr,
@@ -310,8 +343,8 @@ namespace Craft
 		// 사용한 리소스 해제.
 		SafeRelease(vertexShaderObject);
 		SafeRelease(pixelShaderObject);
-
 	}
+
 	void Renderer::CreateViewport(uint32_t width, uint32_t height)
 	{
 		// 뷰포트 설정.
@@ -324,6 +357,5 @@ namespace Craft
 
 		// 바인딩.
 		context->RSSetViewports(1, &viewport);
-
 	}
 }

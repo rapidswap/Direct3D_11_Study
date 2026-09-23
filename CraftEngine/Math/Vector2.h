@@ -4,6 +4,8 @@
 
 namespace Craft
 {
+	// 2차원 벡터 클래스.
+	// 위치/벡터를 저장하는데 모두 사용.
 	class Vector2
 	{
 	public:
@@ -11,7 +13,7 @@ namespace Craft
 
 		// 내적/길이 함수.
 		float Length() const;
-		float LengthSqared() const;
+		float LengthSquared() const;
 		Vector2 Normalized() const;
 		float Dot(const Vector2& other) const;
 
@@ -19,6 +21,7 @@ namespace Craft
 		bool operator==(const Vector2& other) const;
 		bool operator!=(const Vector2& other) const;
 		Vector2& operator=(const Vector2& other);
+
 	public:
 		float x = 0.0f;
 		float y = 0.0f;
@@ -30,4 +33,3 @@ namespace Craft
 		static const Vector2 Up;
 	};
 }
-

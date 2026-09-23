@@ -1,8 +1,6 @@
-#include "LaunchApplication.h"
+﻿#include "LaunchApplication.h"
 #include <Core/Engine.h>
-
 #include <cstdint>
-
 
 int LaunchApplication()
 {
